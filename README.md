@@ -26,6 +26,6 @@ Day3: (Arrays/Math)
 3.4)Majority element in an array(>N/3 times)</br>
 3.5)Grid unique paths</br>
 3.6)Reverse Pairs</br>
-3.7)Excel Column Number</br>  
+3.7)Excel Column Number</br> 
 3.8)Count trailing zeros in factorial of a number</br> 
 3.9)Find GCD in Log N</br>
