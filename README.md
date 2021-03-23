@@ -20,6 +20,7 @@ Day2: (Arrays)
 2.6)Rotate Matrix</br>
 
 Day3: (Arrays/Math) 
+
 3.1)Given a 2D matrix where the elements are sorted in each row and each coloumn,find the target</br>
 3.2)Find n^x in log N</br>
 3.3)Majority element in an array(>N/2 times)</br>
