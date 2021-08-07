@@ -16,7 +16,11 @@ using namespace std;
 const int mod = 1000000007;
 const int N=200005;
 const int inf=1e18;
-map<pair<int,int>,int>adj;
+vector<int>vis(N);
+vector<pair<int,pair<int,int>>>adj;
+int par[N];
+int rankkk[N];
+vector<pair<int,int>>ans;
 
 //* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
@@ -37,43 +41,42 @@ void fun()
     #endif
 }
 
-bool bellmanford(int n,int source)
+int findparent(int x)
 {
-	vector<int>dist(n,inf);
-	dist[source]=0;
-	for(int i=0;i<n-1;i++)
-	{
-		for(auto j:adj)
-		{
-			int c=j.first.first;
-			int d=j.first.second;
-			int key=j.second;
+    if(par[x]==-1)
+        return x;
+    return par[x]=findparent(par[x]);
+}
 
-			if(dist[c]==inf && dist[d]==inf)
-				continue;
-			else if(dist[c]+key<dist[d])
-				dist[d]=dist[c]+key;
-		}
-		// for(auto j:dist)
-		// 	cout<<j<<" ";cout<<endl;
-	}
+void unionn(int x,int y)
+{
+    x=findparent(x);
+    y=findparent(y);
 
-	for(auto i:adj)
-	{
-		int c=i.first.first;
-		int d=i.first.second;
-		int key=i.second;
+    if(rankkk[x]<rankkk[y])
+        par[x]=y;
+    else if(rankkk[x]>rankkk[y])
+        par[y]=x;
+    else
+        {par[x]=y;rankkk[y]++;}
+}
 
-		if(dist[c]==inf && dist[d]==inf)
-			continue;
-		else if(dist[c]+key<dist[d])
-		{
-			dist[d]=dist[c]+key;
-			return true;
-		} 
-	}
-
-	return false;
+int kruskal(int n,vector<pair<int,pair<int,int>>>&v)
+{
+    sort(v.begin(),v.end());
+    int sum=0;
+    for(int i=0;i<n;i++)
+    {
+        int c=findparent(v[i].second.first);
+        int d=findparent(v[i].second.second);
+        if((c==d && d==-1) || c!=d)
+        {
+            unionn(findparent(v[i].second.first),findparent(v[i].second.second));
+            ans.push_back({v[i].second.first,v[i].second.second});
+            sum+=v[i].first;
+        }
+    }
+    return sum;
 }
 
 //* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -94,9 +97,15 @@ signed main()
         {
             int u,v,d;
             cin>>u>>v>>d;
-            adj[{u,v}]=d;
+            adj.push_back({d,{u,v}});
         }
-        cout<<bellmanford(n,0);
+        for(int i=0;i<n;i++)
+            par[i]=-1,rankkk[i]=0;
+
+        cout<<kruskal(n,adj)<<endl;
+
+        for(auto i:ans)
+            cout<<i.first<<" "<<i.second<<endl;
     }
     return 0;
 }

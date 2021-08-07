@@ -16,7 +16,7 @@ using namespace std;
 const int mod = 1000000007;
 const int N=200005;
 const int inf=1e18;
-map<pair<int,int>,int>adj;
+vector<vector<int>>adj(N);
 
 //* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
@@ -37,45 +37,27 @@ void fun()
     #endif
 }
 
-bool bellmanford(int n,int source)
+bool checkcycledfs(int u,int *vis,int *dfsvis)
 {
-	vector<int>dist(n,inf);
-	dist[source]=0;
-	for(int i=0;i<n-1;i++)
-	{
-		for(auto j:adj)
-		{
-			int c=j.first.first;
-			int d=j.first.second;
-			int key=j.second;
+    vis[u]=1;
+    dfsvis[u]=1;
 
-			if(dist[c]==inf && dist[d]==inf)
-				continue;
-			else if(dist[c]+key<dist[d])
-				dist[d]=dist[c]+key;
-		}
-		// for(auto j:dist)
-		// 	cout<<j<<" ";cout<<endl;
-	}
-
-	for(auto i:adj)
-	{
-		int c=i.first.first;
-		int d=i.first.second;
-		int key=i.second;
-
-		if(dist[c]==inf && dist[d]==inf)
-			continue;
-		else if(dist[c]+key<dist[d])
-		{
-			dist[d]=dist[c]+key;
-			return true;
-		} 
-	}
-
-	return false;
+    for(auto i:adj[u])
+    {
+        if(!vis[i])
+        {
+            if(checkcycledfs(i,vis,dfsvis))
+                return true;
+        }
+        else
+        {
+            if(vis[i] && dfsvis[i])
+                return true;
+        }
+    }
+    dfsvis[u]=0;
+    return false;
 }
-
 //* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 signed main()
@@ -90,13 +72,30 @@ signed main()
         cin>>n;
         int e;
         cin>>e;
+
         for(int i=0;i<e;i++)
         {
-            int u,v,d;
-            cin>>u>>v>>d;
-            adj[{u,v}]=d;
+            int u,v;
+            cin>>u>>v;
+            adj[u].push_back(v);
+            //adj[v].push_back(u);
         }
-        cout<<bellmanford(n,0);
+
+        int vis[n+1],dfsvis[n+1];
+        memset(vis,0,sizeof(dfsvis));
+        memset(vis,0,sizeof(vis));
+
+        int flag=0;
+        for(int i=0;i<n;i++)
+        {
+            if(!vis[i])
+            {
+                if(checkcycledfs(i,vis,dfsvis))
+                    {flag=1;break;}
+            }
+        }
+
+        cout<<flag;
     }
     return 0;
 }

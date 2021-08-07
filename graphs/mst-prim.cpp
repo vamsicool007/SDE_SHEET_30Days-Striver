@@ -16,7 +16,9 @@ using namespace std;
 const int mod = 1000000007;
 const int N=200005;
 const int inf=1e18;
-map<pair<int,int>,int>adj;
+vector<int>vis(N);
+vector<pair<int,int>>adj[N];
+int par[N];
 
 //* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
@@ -37,43 +39,40 @@ void fun()
     #endif
 }
 
-bool bellmanford(int n,int source)
+int prim(int n)
 {
-	vector<int>dist(n,inf);
-	dist[source]=0;
+	int mst[n];
+	int dist[n];
+	priority_queue<pair<int,int>,vector<pair<int,int>>,greater<pair<int,int>>>pq;
+
+	for(int i=0;i<n;i++)
+		dist[i]=inf;
+
+	memset(par,-1,sizeof(par));
+	memset(mst,0,sizeof(mst));
+
+	dist[0]=0;
+	pq.push({dist[0],0});
+	int sum=0;
 	for(int i=0;i<n-1;i++)
 	{
-		for(auto j:adj)
+		int index=pq.top().second;
+		int d=pq.top().first;
+		pq.pop();
+		sum+=d;
+		mst[index]=1;
+		for(auto j:adj[index])
 		{
-			int c=j.first.first;
-			int d=j.first.second;
-			int key=j.second;
-
-			if(dist[c]==inf && dist[d]==inf)
-				continue;
-			else if(dist[c]+key<dist[d])
-				dist[d]=dist[c]+key;
-		}
-		// for(auto j:dist)
-		// 	cout<<j<<" ";cout<<endl;
-	}
-
-	for(auto i:adj)
-	{
-		int c=i.first.first;
-		int d=i.first.second;
-		int key=i.second;
-
-		if(dist[c]==inf && dist[d]==inf)
-			continue;
-		else if(dist[c]+key<dist[d])
-		{
-			dist[d]=dist[c]+key;
-			return true;
+			if(dist[j.first]>j.second && !mst[j.first])
+			{
+				par[j.first]=index;
+				dist[j.first]=j.second;
+				pq.push({dist[j.first],j.first});
+			}
 		} 
 	}
-
-	return false;
+	sum+=pq.top().first;
+	return sum;
 }
 
 //* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -86,7 +85,7 @@ signed main()
     //cin>>tt;
     while(tt--)
     {
-        int n;
+    	int n;
         cin>>n;
         int e;
         cin>>e;
@@ -94,9 +93,16 @@ signed main()
         {
             int u,v,d;
             cin>>u>>v>>d;
-            adj[{u,v}]=d;
+            adj[u].push_back({v,d});
+            adj[v].push_back({u,d});
         }
-        cout<<bellmanford(n,0);
+
+        cout<<prim(n)<<endl;
+
+        for(int i=1;i<n;i++)
+        {
+        	cout<<par[i]<<" "<<i<<" "<<endl;
+        }
     }
     return 0;
 }

@@ -16,7 +16,7 @@ using namespace std;
 const int mod = 1000000007;
 const int N=200005;
 const int inf=1e18;
-map<pair<int,int>,int>adj;
+
 
 //* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
@@ -37,43 +37,68 @@ void fun()
     #endif
 }
 
-bool bellmanford(int n,int source)
+void dfs(int u,stack<int> &s,vector<int> &visited,vector<vector<int>> &adj)
 {
-	vector<int>dist(n,inf);
-	dist[source]=0;
-	for(int i=0;i<n-1;i++)
-	{
-		for(auto j:adj)
-		{
-			int c=j.first.first;
-			int d=j.first.second;
-			int key=j.second;
+    visited[u]=1;
+    for(auto i:adj[u])
+    {
+        if(!visited[i])
+            dfs(i,s,visited,adj);
+    }
+    s.push(u);
+}
 
-			if(dist[c]==inf && dist[d]==inf)
-				continue;
-			else if(dist[c]+key<dist[d])
-				dist[d]=dist[c]+key;
-		}
-		// for(auto j:dist)
-		// 	cout<<j<<" ";cout<<endl;
-	}
 
-	for(auto i:adj)
-	{
-		int c=i.first.first;
-		int d=i.first.second;
-		int key=i.second;
+vector<int> toposort(int n,vector<vector<int>> &adj)
+{
+    stack<int>s;
+    vector<int>visited(n,0);
+    for(int i=0;i<n;i++)
+    {
+        if(!visited[i])
+            dfs(i,s,visited,adj);
+    }
 
-		if(dist[c]==inf && dist[d]==inf)
-			continue;
-		else if(dist[c]+key<dist[d])
-		{
-			dist[d]=dist[c]+key;
-			return true;
-		} 
-	}
+    vector<int>v;
+    while(!s.empty())
+    {
+        v.push_back(s.top());
+        s.pop();
+    }
+    return v;
+}
 
-	return false;
+void transposefuntion(int n,vector<vector<int>> &transpose,vector<vector<int>> &adj)
+{
+    for(int i=0;i<n;i++)
+    {
+        for(auto j:adj[i])
+            transpose[j].push_back(i);
+    }
+}
+
+void kosaraju(int n,vector<vector<int>> &adj)
+{
+    //finding transpose
+    vector<vector<int>>transpose(N);
+    transposefuntion(n,transpose,adj);
+
+    //finding finish time using toposort
+    vector<int>v=toposort(n,adj);
+    
+    vector<int>vis(n,0);
+    for(int i=0;i<n;i++)
+    {
+        if(vis[i]==0)
+        {
+            stack<int>s;
+            cout<<"SCC: ";
+            dfs(i,s,vis,transpose);
+            while(!s.empty())
+                {cout<<s.top()<<" ";s.pop();}
+            cout<<endl;
+        }
+    }
 }
 
 //* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -90,13 +115,14 @@ signed main()
         cin>>n;
         int e;
         cin>>e;
+        vector<vector<int>>adj(N);
         for(int i=0;i<e;i++)
         {
-            int u,v,d;
-            cin>>u>>v>>d;
-            adj[{u,v}]=d;
+            int u,v;
+            cin>>u>>v;
+            adj[u].push_back(v);
         }
-        cout<<bellmanford(n,0);
+        kosaraju(n,adj);
     }
     return 0;
 }

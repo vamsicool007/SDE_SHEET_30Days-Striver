@@ -16,7 +16,8 @@ using namespace std;
 const int mod = 1000000007;
 const int N=200005;
 const int inf=1e18;
-map<pair<int,int>,int>adj;
+vector<int>vis(N);
+vector<vector<int>>adj(N);
 
 //* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
@@ -37,43 +38,47 @@ void fun()
     #endif
 }
 
-bool bellmanford(int n,int source)
+bool checkbipartitebfs(int u,int *color)
 {
-	vector<int>dist(n,inf);
-	dist[source]=0;
-	for(int i=0;i<n-1;i++)
-	{
-		for(auto j:adj)
-		{
-			int c=j.first.first;
-			int d=j.first.second;
-			int key=j.second;
+    queue<int>q;
+    q.push(u);
+    color[u]=1;
+    while(!q.empty())
+    {
+        int c=q.front();
+        q.pop();
+        for(auto i:adj[c])
+        {
+            if(color[i]==-1)
+            {
+                q.push(i);
+                color[i]=1-color[c];
+            }
+            else if(color[i]==color[c])
+                return false;
+        }
+    }   
+    return true;
+}
 
-			if(dist[c]==inf && dist[d]==inf)
-				continue;
-			else if(dist[c]+key<dist[d])
-				dist[d]=dist[c]+key;
-		}
-		// for(auto j:dist)
-		// 	cout<<j<<" ";cout<<endl;
-	}
+bool checkbipartitedfs(int u,int *color)
+{
+    if(color[u]==-1)
+        color[u]=1;
 
-	for(auto i:adj)
-	{
-		int c=i.first.first;
-		int d=i.first.second;
-		int key=i.second;
+    for(auto i:adj[u])
+    {
+        if(color[i]==-1)
+        {
+            color[i]=1-color[u];
+            if(!checkbipartitedfs(i,color))
+                return false;
+        }
+        else if(color[i]==color[u])
+            return false;
+    }
 
-		if(dist[c]==inf && dist[d]==inf)
-			continue;
-		else if(dist[c]+key<dist[d])
-		{
-			dist[d]=dist[c]+key;
-			return true;
-		} 
-	}
-
-	return false;
+    return true;
 }
 
 //* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -90,13 +95,29 @@ signed main()
         cin>>n;
         int e;
         cin>>e;
+
         for(int i=0;i<e;i++)
         {
-            int u,v,d;
-            cin>>u>>v>>d;
-            adj[{u,v}]=d;
+            int u,v;
+            cin>>u>>v;
+            adj[u].push_back(v);
+            adj[v].push_back(u);
         }
-        cout<<bellmanford(n,0);
+
+        int flag=1;
+        int color[n+1];
+        memset(color,-1,sizeof(color));
+
+        for(int i=1;i<=n;i++)
+        {
+            if(color[i]==-1)
+            {
+                if(!checkbipartitedfs(i,color))
+                    {flag=0;break;}
+            }
+        }
+
+        cout<<flag;
     }
     return 0;
 }

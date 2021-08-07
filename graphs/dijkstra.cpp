@@ -16,7 +16,8 @@ using namespace std;
 const int mod = 1000000007;
 const int N=200005;
 const int inf=1e18;
-map<pair<int,int>,int>adj;
+vector<int>vis(N);
+vector<pair<int,int>>adj[N];
 
 //* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
@@ -37,43 +38,34 @@ void fun()
     #endif
 }
 
-bool bellmanford(int n,int source)
+vector<int> dijkstra(int n,int s)
 {
-	vector<int>dist(n,inf);
-	dist[source]=0;
-	for(int i=0;i<n-1;i++)
-	{
-		for(auto j:adj)
-		{
-			int c=j.first.first;
-			int d=j.first.second;
-			int key=j.second;
+	vector<int>dist(n);
+	for(int i=0;i<n;i++)
+		dist[i]=inf;
+	
+	dist[s]=0;
 
-			if(dist[c]==inf && dist[d]==inf)
-				continue;
-			else if(dist[c]+key<dist[d])
-				dist[d]=dist[c]+key;
+	priority_queue<pair<int,int>,vector<pair<int,int>>,greater<pair<int,int>>>q;
+	q.push({0,s});
+
+	while(!q.empty())
+	{
+		int prevdist=q.top().first;
+		int prev=q.top().second;
+		q.pop();
+		for(auto i:adj[prev])
+		{
+			int next=i.first;
+			int nextdist=i.second;
+			if(dist[next]>nextdist+dist[prev])
+			{
+				dist[next]=dist[prev]+nextdist;
+				q.push({dist[next],next});
+			}
 		}
-		// for(auto j:dist)
-		// 	cout<<j<<" ";cout<<endl;
 	}
-
-	for(auto i:adj)
-	{
-		int c=i.first.first;
-		int d=i.first.second;
-		int key=i.second;
-
-		if(dist[c]==inf && dist[d]==inf)
-			continue;
-		else if(dist[c]+key<dist[d])
-		{
-			dist[d]=dist[c]+key;
-			return true;
-		} 
-	}
-
-	return false;
+	return dist;
 }
 
 //* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -86,7 +78,7 @@ signed main()
     //cin>>tt;
     while(tt--)
     {
-        int n;
+    	int n;
         cin>>n;
         int e;
         cin>>e;
@@ -94,9 +86,13 @@ signed main()
         {
             int u,v,d;
             cin>>u>>v>>d;
-            adj[{u,v}]=d;
+            adj[u].push_back({v,d});
+            adj[v].push_back({u,d});
         }
-        cout<<bellmanford(n,0);
+
+        vector<int>v=dijkstra(n,1);
+        for(auto i:v)
+        	cout<<i<<" ";
     }
     return 0;
 }

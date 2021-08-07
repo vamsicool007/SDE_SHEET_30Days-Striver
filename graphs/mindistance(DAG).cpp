@@ -16,7 +16,6 @@ using namespace std;
 const int mod = 1000000007;
 const int N=200005;
 const int inf=1e18;
-map<pair<int,int>,int>adj;
 
 //* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
@@ -37,43 +36,61 @@ void fun()
     #endif
 }
 
-bool bellmanford(int n,int source)
+vector<int> toposort(int n,vector<pair<int,int>>adj[])
 {
-	vector<int>dist(n,inf);
-	dist[source]=0;
-	for(int i=0;i<n-1;i++)
-	{
-		for(auto j:adj)
-		{
-			int c=j.first.first;
-			int d=j.first.second;
-			int key=j.second;
+    queue<int>q;
+    vector<int>indegree(n,0);
+    vector<int>v;
+    for(int i=0;i<n;i++)
+    {
+        for(auto j:adj[i])
+            indegree[j.first]++;
+    }
 
-			if(dist[c]==inf && dist[d]==inf)
-				continue;
-			else if(dist[c]+key<dist[d])
-				dist[d]=dist[c]+key;
-		}
-		// for(auto j:dist)
-		// 	cout<<j<<" ";cout<<endl;
-	}
+    for(int i=0;i<n;i++)
+        if(indegree[i]==0)
+            q.push(i);
+    // for(auto i:indegree)
+    //     cout<<i<<" ";
+    while(!q.empty())
+    {
+        int x=q.front();
+        q.pop();
+        v.push_back(x);
+        for(auto i:adj[x])
+        {
+            indegree[i.first]--;
+            if(indegree[i.first]==0)
+                q.push(i.first);
+        }   
+    }
+    return v;
+}
 
-	for(auto i:adj)
-	{
-		int c=i.first.first;
-		int d=i.first.second;
-		int key=i.second;
+vector<int> mindistance(int s,int n,vector<pair<int,int>>adj[],vector<int>v)
+{
+    vector<int>dist(n);
+    int vis[n];
+    memset(vis,0,sizeof(vis));
+    for(int i=0;i<n;i++)
+        dist[i]=inf;
 
-		if(dist[c]==inf && dist[d]==inf)
-			continue;
-		else if(dist[c]+key<dist[d])
-		{
-			dist[d]=dist[c]+key;
-			return true;
-		} 
-	}
+    dist[s]=0;
+    vis[s]=1;
 
-	return false;
+    for(int i=0;i<n;i++)
+    {   
+        if(dist[v[i]]!=inf)
+        {
+            for(auto j:adj[v[i]])
+            {
+                vis[j.first]=1;
+                if(dist[v[i]]+j.second<dist[j.first])
+                    dist[j.first]=dist[v[i]]+j.second;
+            }
+        }
+    }
+    return dist;
 }
 
 //* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -85,18 +102,26 @@ signed main()
     int tt=1;
     //cin>>tt;
     while(tt--)
-    {
+    {   
         int n;
         cin>>n;
         int e;
         cin>>e;
+        vector<pair<int,int>>adj[n];
         for(int i=0;i<e;i++)
         {
             int u,v,d;
             cin>>u>>v>>d;
-            adj[{u,v}]=d;
+            adj[u].push_back({v,d});
         }
-        cout<<bellmanford(n,0);
+
+        vector<int>v=toposort(n,adj);
+        vector<int>dist=mindistance(1,n,adj,v);
+
+        for(auto i:dist)
+            cout<<i<<" ";
     }
     return 0;
 }
+
+
